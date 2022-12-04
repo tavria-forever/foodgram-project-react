@@ -13,12 +13,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+  django:
+    build: ../backend/foodgram/
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ../frontend/:/app/result_build/
+      - ../backend/foodgram:/app
+    env_file:
+      - ./.env
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
   nginx:
     image: nginx:1.19.3
     ports:
