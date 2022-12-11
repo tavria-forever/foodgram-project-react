@@ -20,8 +20,7 @@ class Tag(models.Model):
 
     def __str__(self):
         return (
-            f'Tag(id={self.id}, name={self.name[:15]}, slug'
-            f'={self.slug[:15]}), color={self.color}'
+            f'{self.name[:15]} {self.slug[:15]}, {self.color}'
         )
 
 
@@ -33,14 +32,15 @@ class MeasurementUnit(models.Model):
         verbose_name_plural = 'Единицы измерения'
 
     def __str__(self):
-        return f'MeasurementUnit(id={self.id}, name={self.name}'
+        return f'{self.name}'
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     measurement_unit = models.ForeignKey(
         MeasurementUnit,
         null=True,
+        to_field='name',
         on_delete=models.SET_NULL,
         related_name='ingredients'
     )
@@ -52,13 +52,13 @@ class Ingredient(models.Model):
                 name='ingredient_name_measurement_unit_unique',
             ),
         ]
+        ordering = ('name', 'measurement_unit',)
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Ингридиенты'
 
     def __str__(self):
         return (
-            f'Ingredient(id={self.id}, name={self.name[:15]}, measurement_unit'
-            f'={self.measurement_unit})'
+            f'{self.name[:15]} / {self.measurement_unit}'
         )
 
 
