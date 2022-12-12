@@ -3,10 +3,13 @@ from rest_framework.permissions import (IsAuthenticated, AllowAny)
 from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.models import Tag, Ingredient, Recipe
-from rest_framework.parsers import JSONParser, MultiPartParser
 
 from .filters import IngredientFilter
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
+from .serializers import (
+    TagSerializer,
+    IngredientSerializer,
+    RecipeSerializer,
+)
 from .permissions import IsOwnerOrReadOnly
 
 
@@ -29,8 +32,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    # parser_classes = (MultiPartParser, JSONParser)
-
 
     def get_permissions(self):
         if self.action in ['partial_update', 'destroy']:

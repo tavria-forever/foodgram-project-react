@@ -2,7 +2,7 @@ from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseDjoserUserCreateSerializer
 
 from users.models import User
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from .fields import RecipeImageField
 
 
@@ -51,34 +51,41 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class IngredientRecipeSerializer(serializers.ModelSerializer):
+    amount = serializers.SerializerMethodField()
+
+    def get_amount(self, obj):
+        recipe_ingredient = RecipeIngredient.objects.get(ingredient_id=obj.id)
+        return recipe_ingredient.amount
+
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     image = RecipeImageField(max_length=None, use_url=True)
-    # author = UserSerializer()
-    # tags = TagSerializer(many=True)
-    # ingredients = IngredientSerializer(many=True)
-
-    author = serializers.SlugRelatedField(
-        slug_field='id',
-        read_only=True
-    )
-    tags = serializers.SlugRelatedField(
-        slug_field='id',
-        read_only=True,
-        many=True,
-    )
-    ingredients = serializers.SlugRelatedField(
-        slug_field='id',
-        read_only=True,
-        many=True,
-    )
-
+    author = UserSerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = IngredientRecipeSerializer(many=True, read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
-    # def create(self, validated_data):
-    #     print(f'validated_data {validated_data}')
-    #
-    #     return Recipe(**validated_data)
+    def create(self, validated_data):
+        raw_data = self.context['request'].data
+        recipe_instance = Recipe.objects.create(**validated_data)
+
+        tags = Tag.objects.filter(pk__in=raw_data.get('tags')).all()
+        recipe_instance.tags.set(tags)
+
+        for item in raw_data.get('ingredients'):
+            ingredient_instance = Ingredient.objects.get(pk=item.get('id'))
+            recipe_instance.ingredients.add(
+                ingredient_instance,
+                through_defaults={'amount': item.get('amount')}
+            )
+
+        return recipe_instance
 
     def get_is_favorited(self, obj):
         return True

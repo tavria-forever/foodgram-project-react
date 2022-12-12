@@ -91,7 +91,7 @@ class Recipe(models.Model):
 
     def __str__(self):
         return (
-            f'{self.name[:15]}'
+            f'{self.name[:15]} {self.tags}'
         )
 
 
