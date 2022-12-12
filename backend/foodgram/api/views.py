@@ -1,10 +1,15 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
-from rest_framework.permissions import (IsAuthenticated, IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (IsAuthenticated, AllowAny)
+from django_filters.rest_framework import DjangoFilterBackend
+
 from users.models import User
-from .serializers import UserSerializer, ChangePasswordSerializer
+from recipes.models import Tag, Ingredient
+
+from .filters import IngredientFilter
+from .serializers import UserSerializer, ChangePasswordSerializer, TagSerializer, IngredientSerializer
 from .permissions import UserPermissions
 
 
@@ -37,3 +42,19 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = None
+
+
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = None
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
