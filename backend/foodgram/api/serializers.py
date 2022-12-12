@@ -1,8 +1,9 @@
 from rest_framework import serializers
-
-from users.models import User, Follow
-from recipes.models import Tag, Ingredient, Recipe
 from djoser.serializers import UserCreateSerializer as BaseDjoserUserCreateSerializer
+
+from users.models import User
+from recipes.models import Tag, Ingredient, Recipe
+from .fields import RecipeImageField
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,11 +52,33 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
-    tags = TagSerializer(many=True)
-    ingredients = IngredientSerializer(many=True)
+    image = RecipeImageField(max_length=None, use_url=True)
+    # author = UserSerializer()
+    # tags = TagSerializer(many=True)
+    # ingredients = IngredientSerializer(many=True)
+
+    author = serializers.SlugRelatedField(
+        slug_field='id',
+        read_only=True
+    )
+    tags = serializers.SlugRelatedField(
+        slug_field='id',
+        read_only=True,
+        many=True,
+    )
+    ingredients = serializers.SlugRelatedField(
+        slug_field='id',
+        read_only=True,
+        many=True,
+    )
+
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+
+    # def create(self, validated_data):
+    #     print(f'validated_data {validated_data}')
+    #
+    #     return Recipe(**validated_data)
 
     def get_is_favorited(self, obj):
         return True

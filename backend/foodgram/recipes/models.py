@@ -66,7 +66,7 @@ class Recipe(models.Model):
     name = models.CharField(max_length=255)
     text = models.TextField()
     cooking_time = models.PositiveIntegerField()
-    image = models.FileField(
+    image = models.ImageField(
         upload_to="recipes/",
     )
     author = models.ForeignKey(
