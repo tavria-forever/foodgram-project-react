@@ -91,10 +91,7 @@ class Recipe(models.Model):
 
     def __str__(self):
         return (
-            f'Recipe(id={self.id}, name={self.name[:15]}, text'
-            f'={self.text[:15]}, cooking_time={self.cooking_time})'
-            f'image={self.image[:15]}, author={self.author})'
-            f'tags={self.tags}, ingredients={self.ingredients})'
+            f'{self.name[:15]}'
         )
 
 
