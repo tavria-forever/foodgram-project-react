@@ -5,12 +5,12 @@ from users.models import User
 
 
 class ShoppingOrder(models.Model):
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='shopping_orders'
     )
-    recipe_id = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='shopping_orders'
@@ -19,7 +19,7 @@ class ShoppingOrder(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user_id', 'recipe_id'],
+                fields=['user', 'recipe'],
                 name='shopping_order_user_recipe_unique',
             ),
         ]

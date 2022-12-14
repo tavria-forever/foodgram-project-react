@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import (IsAuthenticated, AllowAny)
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -21,7 +22,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Ingredient.objects.all()
+    queryset = Ingredient.objects.select_related('measurement_unit').all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
     pagination_class = None
@@ -29,8 +30,9 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
 
 
+# https://www.django-rest-framework.org/api-guide/viewsets/#viewset-actions
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.select_related('author').all()
     serializer_class = RecipeSerializer
 
     def get_permissions(self):

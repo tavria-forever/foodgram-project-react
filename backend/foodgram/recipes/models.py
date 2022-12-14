@@ -96,12 +96,12 @@ class Recipe(models.Model):
 
 
 class RecipeTag(models.Model):
-    recipe_id = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='recipe_tags'
     )
-    tag_id = models.ForeignKey(
+    tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
         related_name='recipe_tags'
@@ -109,20 +109,20 @@ class RecipeTag(models.Model):
 
     def __str__(self):
         return (
-            f'RecipeTag(id={self.id}, recipe_id={self.recipe_id}, tag_id'
-            f'={self.tag_id})'
+            f'RecipeTag(id={self.id}, recipe_id={self.recipe}, tag_id'
+            f'={self.tag})'
         )
 
 
 class RecipeIngredient(models.Model):
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient_id = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
 
     def __str__(self):
         return (
-            f'RecipeIngredient(id={self.id}, recipe_id={self.recipe_id}, ingredient_id'
-            f'={self.ingredient_id}, amount={self.amount})'
+            f'RecipeIngredient(id={self.id}, recipe_id={self.recipe}, ingredient_id'
+            f'={self.ingredient}, amount={self.amount})'
         )
 
 
