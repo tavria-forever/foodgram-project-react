@@ -9,6 +9,7 @@ class Tag(models.Model):
     color = models.CharField(max_length=7)
 
     class Meta:
+        ordering = ('-name',)
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'slug'],
@@ -28,6 +29,7 @@ class MeasurementUnit(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
     class Meta:
+        ordering = ('-name',)
         verbose_name = 'Единица измерения'
         verbose_name_plural = 'Единицы измерения'
 
@@ -86,6 +88,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -139,6 +142,7 @@ class FavouriteRecipe(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],

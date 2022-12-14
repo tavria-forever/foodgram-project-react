@@ -61,15 +61,18 @@ class IngredientRecipeSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount',)
 
 
-def add_recipe_tags_ingredients(recipe_instance, tag_ids, ingredients_data):
-    tags = Tag.objects.filter(pk__in=tag_ids)
-    recipe_instance.tags.set(tags)
-    for item in ingredients_data:
-        ingredient_instance = Ingredient.objects.get(pk=item.get('id'))
-        recipe_instance.ingredients.add(
-            ingredient_instance,
-            through_defaults={'amount': item.get('amount')}
-        )
+def add_recipe_tags_ingredients(recipe_instance, tag_ids=None, ingredients_data=None):
+    if tag_ids is not None:
+        tags = Tag.objects.filter(pk__in=tag_ids)
+        recipe_instance.tags.set(tags)
+
+    if ingredients_data is not None:
+        for item in ingredients_data:
+            ingredient_instance = Ingredient.objects.get(pk=item.get('id'))
+            recipe_instance.ingredients.add(
+                ingredient_instance,
+                through_defaults={'amount': item.get('amount')}
+            )
     return recipe_instance
 
 
@@ -100,13 +103,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.image = validated_data.get('image', instance.image)
         instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
-        updated_instance = add_recipe_tags_ingredients(
+        add_recipe_tags_ingredients(
             recipe_instance=instance,
             tag_ids=raw_data.get('tags'),
             ingredients_data=raw_data.get('ingredients')
         )
-        updated_instance.save()
-        return updated_instance
+        instance.save()
+        return instance
 
     def get_is_favorited(self, obj):
         return True
@@ -115,6 +118,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return True
 
     class Meta:
-        ordering = ['-id']
+        ordering = ('-id',)
         model = Recipe
         fields = '__all__'

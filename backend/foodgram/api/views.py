@@ -1,11 +1,8 @@
 from rest_framework import viewsets
-from django.shortcuts import get_object_or_404
 from rest_framework.permissions import (IsAuthenticated, AllowAny)
 from django_filters.rest_framework import DjangoFilterBackend
-
 from recipes.models import Tag, Ingredient, Recipe
-
-from .filters import IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
@@ -30,10 +27,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
 
 
-# https://www.django-rest-framework.org/api-guide/viewsets/#viewset-actions
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.select_related('author').all()
     serializer_class = RecipeSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_permissions(self):
         if self.action in ['partial_update', 'destroy']:

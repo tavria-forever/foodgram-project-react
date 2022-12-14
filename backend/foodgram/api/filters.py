@@ -1,5 +1,5 @@
 import django_filters
-from recipes.models import Ingredient
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilter(django_filters.FilterSet):
@@ -10,3 +10,18 @@ class IngredientFilter(django_filters.FilterSet):
     class Meta:
         model = Ingredient
         fields = []
+
+
+class RecipeFilter(django_filters.FilterSet):
+    tags = django_filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        lookup_expr='contains',
+        conjoined=True,
+        queryset=Tag.objects.all()
+    )
+
+    class Meta:
+        model = Recipe
+        fields = ('author',)
+
