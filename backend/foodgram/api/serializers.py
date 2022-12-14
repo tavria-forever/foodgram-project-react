@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseDjoserUserCreateSerializer
 
-from users.models import User
+from users.models import User, Follow
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from .fields import RecipeImageField
 
@@ -121,3 +121,43 @@ class RecipeSerializer(serializers.ModelSerializer):
         ordering = ('-id',)
         model = Recipe
         fields = '__all__'
+
+
+class FollowCreateDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = '__all__'
+
+
+class FollowListSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='author.id')
+    email = serializers.ReadOnlyField(source='author.email')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+
+    def get_is_subscribed(self, obj):
+        return True
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj.author_id).count()
+
+    def get_recipes(self, obj):
+        recipes_limit = self.context['request'].query_params.get('recipes_limit', None)
+        recipe_instances = Recipe.objects.filter(author=obj.author_id).order_by('-id')[:int(recipes_limit)]
+        recipes = []
+        for item in recipe_instances.values():
+            recipes.append({
+                'id': item.get('id'),
+                'name': item.get('name'),
+                'image': item.get('image'),
+                'cooking_time': item.get('cooking_time')
+            })
+        return recipes
+
+    class Meta:
+        model = Follow
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count',)

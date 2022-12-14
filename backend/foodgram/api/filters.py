@@ -17,7 +17,6 @@ class RecipeFilter(django_filters.FilterSet):
         field_name='tags__slug',
         to_field_name='slug',
         lookup_expr='contains',
-        conjoined=True,
         queryset=Tag.objects.all()
     )
 

@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views import TagViewSet, IngredientViewSet, RecipeViewSet
+from .views import TagViewSet, IngredientViewSet, RecipeViewSet, FollowCreateDestroyViewSet, FollowListViewSet
 
 app_name = 'api'
 
@@ -9,7 +9,12 @@ router = routers.DefaultRouter()
 router.register('tags', TagViewSet, basename='tags')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
 router.register('recipes', RecipeViewSet, basename='recipes')
-
+router.register(
+    r'users/(?P<author_id>\d+)/subscribe', FollowCreateDestroyViewSet, basename='subscribe'
+)
+router.register(
+    r'users/subscriptions', FollowListViewSet, basename='subscriptions'
+)
 urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls')),
