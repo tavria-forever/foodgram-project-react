@@ -1,4 +1,5 @@
 import django_filters
+
 from recipes.models import Ingredient, Recipe, Tag
 
 
@@ -17,10 +18,9 @@ class RecipeFilter(django_filters.FilterSet):
         field_name='tags__slug',
         to_field_name='slug',
         lookup_expr='contains',
-        queryset=Tag.objects.all()
+        queryset=Tag.objects.all(),
     )
 
     class Meta:
         model = Recipe
         fields = ('author',)
-

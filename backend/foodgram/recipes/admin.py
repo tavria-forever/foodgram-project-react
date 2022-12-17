@@ -1,7 +1,14 @@
 from django.contrib import admin
 
 from .forms import TagModelForm
-from .models import Tag, MeasurementUnit, Ingredient, Recipe, RecipeIngredient, RecipeTag
+from .models import (
+    Ingredient,
+    MeasurementUnit,
+    Recipe,
+    RecipeIngredient,
+    RecipeTag,
+    Tag,
+)
 
 
 @admin.register(Tag)
@@ -32,7 +39,10 @@ class RecipeTagInline(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'text', 'cooking_time']
-    inlines = (RecipeIngredientInline, RecipeTagInline,)
+    inlines = (
+        RecipeIngredientInline,
+        RecipeTagInline,
+    )
 
 
 admin.site.register(MeasurementUnit)

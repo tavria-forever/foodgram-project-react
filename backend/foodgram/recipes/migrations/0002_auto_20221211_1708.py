@@ -24,14 +24,21 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='favouriterecipe',
-            constraint=models.UniqueConstraint(fields=('user', 'recipe'), name='favourite_user_recipe_unique'),
+            constraint=models.UniqueConstraint(
+                fields=('user', 'recipe'), name='favourite_user_recipe_unique'
+            ),
         ),
         migrations.AddConstraint(
             model_name='ingredient',
-            constraint=models.UniqueConstraint(fields=('name', 'measurement_unit'), name='ingredient_name_measurement_unit_unique'),
+            constraint=models.UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='ingredient_name_measurement_unit_unique',
+            ),
         ),
         migrations.AddConstraint(
             model_name='tag',
-            constraint=models.UniqueConstraint(fields=('name', 'slug'), name='tag_name_slug_unique'),
+            constraint=models.UniqueConstraint(
+                fields=('name', 'slug'), name='tag_name_slug_unique'
+            ),
         ),
     ]

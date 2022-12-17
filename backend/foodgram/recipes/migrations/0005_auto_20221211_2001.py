@@ -12,6 +12,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='ingredient',
-            options={'ordering': ('name', 'measurement_unit'), 'verbose_name': 'Ингридиент', 'verbose_name_plural': 'Ингридиенты'},
+            options={
+                'ordering': ('name', 'measurement_unit'),
+                'verbose_name': 'Ингридиент',
+                'verbose_name_plural': 'Ингридиенты',
+            },
         ),
     ]

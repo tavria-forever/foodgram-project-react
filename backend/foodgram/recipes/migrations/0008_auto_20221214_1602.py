@@ -16,14 +16,26 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelOptions(
             name='measurementunit',
-            options={'ordering': ('-name',), 'verbose_name': 'Единица измерения', 'verbose_name_plural': 'Единицы измерения'},
+            options={
+                'ordering': ('-name',),
+                'verbose_name': 'Единица измерения',
+                'verbose_name_plural': 'Единицы измерения',
+            },
         ),
         migrations.AlterModelOptions(
             name='recipe',
-            options={'ordering': ('-id',), 'verbose_name': 'Рецепт', 'verbose_name_plural': 'Рецепты'},
+            options={
+                'ordering': ('-id',),
+                'verbose_name': 'Рецепт',
+                'verbose_name_plural': 'Рецепты',
+            },
         ),
         migrations.AlterModelOptions(
             name='tag',
-            options={'ordering': ('-name',), 'verbose_name': 'Тег', 'verbose_name_plural': 'Теги'},
+            options={
+                'ordering': ('-name',),
+                'verbose_name': 'Тег',
+                'verbose_name_plural': 'Теги',
+            },
         ),
     ]

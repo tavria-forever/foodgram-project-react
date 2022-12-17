@@ -26,6 +26,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='shoppingorder',
-            constraint=models.UniqueConstraint(fields=('user', 'recipe'), name='shopping_order_user_recipe_unique'),
+            constraint=models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='shopping_order_user_recipe_unique',
+            ),
         ),
     ]

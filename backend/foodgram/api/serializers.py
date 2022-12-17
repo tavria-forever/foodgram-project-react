@@ -1,8 +1,17 @@
+from djoser.serializers import (
+    UserCreateSerializer as BaseDjoserUserCreateSerializer,
+)
 from rest_framework import serializers
-from djoser.serializers import UserCreateSerializer as BaseDjoserUserCreateSerializer
 
-from users.models import User, Follow
-from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
+from recipes.models import (
+    FavouriteRecipe,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Tag,
+)
+from users.models import Follow, User
+
 from .fields import RecipeImageField
 
 
@@ -23,18 +32,23 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
-            'is_subscribed'
+            'is_subscribed',
         )
 
 
 class UserCreateSerializer(BaseDjoserUserCreateSerializer):
     class Meta(BaseDjoserUserCreateSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password',)
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+        )
         extra_kwargs = {
-            'password': {
-                'write_only': True
-            },
+            'password': {'write_only': True},
         }
 
 
@@ -53,14 +67,23 @@ class IngredientSerializer(serializers.ModelSerializer):
 class IngredientRecipeSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit_id')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit_id'
+    )
 
     class Meta:
         model = RecipeIngredient
-        fields = ('id', 'name', 'measurement_unit', 'amount',)
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+            'amount',
+        )
 
 
-def add_recipe_tags_ingredients(recipe_instance, tag_ids=None, ingredients_data=None):
+def add_recipe_tags_ingredients(
+    recipe_instance, tag_ids=None, ingredients_data=None
+):
     if tag_ids is not None:
         tags = Tag.objects.filter(pk__in=tag_ids)
         recipe_instance.tags.set(tags)
@@ -70,7 +93,7 @@ def add_recipe_tags_ingredients(recipe_instance, tag_ids=None, ingredients_data=
             ingredient_instance = Ingredient.objects.get(pk=item.get('id'))
             recipe_instance.ingredients.add(
                 ingredient_instance,
-                through_defaults={'amount': item.get('amount')}
+                through_defaults={'amount': item.get('amount')},
             )
     return recipe_instance
 
@@ -93,7 +116,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return add_recipe_tags_ingredients(
             recipe_instance=recipe_instance,
             tag_ids=raw_data.get('tags'),
-            ingredients_data=raw_data.get('ingredients')
+            ingredients_data=raw_data.get('ingredients'),
         )
 
     def update(self, instance, validated_data):
@@ -101,11 +124,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.image = validated_data.get('image', instance.image)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
         add_recipe_tags_ingredients(
             recipe_instance=instance,
             tag_ids=raw_data.get('tags'),
-            ingredients_data=raw_data.get('ingredients')
+            ingredients_data=raw_data.get('ingredients'),
         )
         instance.save()
         return instance
@@ -145,18 +170,39 @@ class FollowListSerializer(serializers.ModelSerializer):
         return Recipe.objects.filter(author=obj.author_id).count()
 
     def get_recipes(self, obj):
-        recipes_limit = self.context['request'].query_params.get('recipes_limit', None)
-        recipe_instances = Recipe.objects.filter(author=obj.author_id).order_by('-id')[:int(recipes_limit)]
+        recipes_limit = self.context['request'].query_params.get(
+            'recipes_limit', None
+        )
+        recipe_instances = Recipe.objects.filter(
+            author=obj.author_id
+        ).order_by('-id')[: int(recipes_limit)]
         recipes = []
         for item in recipe_instances.values():
-            recipes.append({
-                'id': item.get('id'),
-                'name': item.get('name'),
-                'image': item.get('image'),
-                'cooking_time': item.get('cooking_time')
-            })
+            recipes.append(
+                {
+                    'id': item.get('id'),
+                    'name': item.get('name'),
+                    'image': item.get('image'),
+                    'cooking_time': item.get('cooking_time'),
+                }
+            )
         return recipes
 
     class Meta:
         model = Follow
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count',)
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavouriteRecipe
+        fields = ('__all__',)

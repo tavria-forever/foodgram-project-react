@@ -6,14 +6,10 @@ from users.models import User
 
 class ShoppingOrder(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shopping_orders'
+        User, on_delete=models.CASCADE, related_name='shopping_orders'
     )
     recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='shopping_orders'
+        Recipe, on_delete=models.CASCADE, related_name='shopping_orders'
     )
 
     class Meta:

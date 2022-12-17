@@ -20,9 +20,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
 
     def __str__(self):
-        return (
-            f'{self.name[:15]} {self.slug[:15]}, {self.color}'
-        )
+        return f'{self.name[:15]} {self.slug[:15]}, {self.color}'
 
 
 class MeasurementUnit(models.Model):
@@ -44,7 +42,7 @@ class Ingredient(models.Model):
         null=True,
         to_field='name',
         on_delete=models.SET_NULL,
-        related_name='ingredients'
+        related_name='ingredients',
     )
 
     class Meta:
@@ -54,14 +52,15 @@ class Ingredient(models.Model):
                 name='ingredient_name_measurement_unit_unique',
             ),
         ]
-        ordering = ('name', 'measurement_unit',)
+        ordering = (
+            'name',
+            'measurement_unit',
+        )
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Ингридиенты'
 
     def __str__(self):
-        return (
-            f'{self.name[:15]} / {self.measurement_unit}'
-        )
+        return f'{self.name[:15]} / {self.measurement_unit}'
 
 
 class Recipe(models.Model):
@@ -72,19 +71,13 @@ class Recipe(models.Model):
         upload_to="recipes/",
     )
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='recipes'
+        User, on_delete=models.CASCADE, related_name='recipes'
     )
     tags = models.ManyToManyField(
-        Tag,
-        through='RecipeTag',
-        related_name='recipes'
+        Tag, through='RecipeTag', related_name='recipes'
     )
     ingredients = models.ManyToManyField(
-        Ingredient,
-        through='RecipeIngredient',
-        related_name='recipes'
+        Ingredient, through='RecipeIngredient', related_name='recipes'
     )
 
     class Meta:
@@ -93,21 +86,15 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return (
-            f'{self.name[:15]} {self.tags}'
-        )
+        return f'{self.name[:15]} {self.tags}'
 
 
 class RecipeTag(models.Model):
     recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='recipe_tags'
+        Recipe, on_delete=models.CASCADE, related_name='recipe_tags'
     )
     tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        related_name='recipe_tags'
+        Tag, on_delete=models.CASCADE, related_name='recipe_tags'
     )
 
     def __str__(self):

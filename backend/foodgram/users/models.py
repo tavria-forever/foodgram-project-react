@@ -17,8 +17,7 @@ class User(AbstractUser):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['username', 'email'],
-                name='user_unique_username_email'
+                fields=['username', 'email'], name='user_unique_username_email'
             )
         ]
 
@@ -31,14 +30,10 @@ class User(AbstractUser):
 
 class Follow(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower'
+        User, on_delete=models.CASCADE, related_name='follower'
     )
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following'
+        User, on_delete=models.CASCADE, related_name='following'
     )
 
     class Meta:

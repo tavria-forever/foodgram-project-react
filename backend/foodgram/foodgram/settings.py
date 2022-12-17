@@ -3,8 +3,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv(
-    'DJANGO_SECRET_KEY',
-    '11xhwhxnbb-cyh8d0-gt$0pyiz=^=yroza+ph#b228fx5djqw$'
+    'DJANGO_SECRET_KEY', '11xhwhxnbb-cyh8d0-gt$0pyiz=^=yroza+ph#b228fx5djqw$'
 )
 
 DEFAULT_ADMIN = ('admin', 'tavriaforever@yandex.ru')
@@ -67,7 +66,7 @@ DATABASES = {
         'USER': os.getenv('POSTGRES_USER', ''),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', '')
+        'PORT': os.getenv('DB_PORT', ''),
     }
 }
 
@@ -105,9 +104,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
-    ),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
@@ -137,7 +134,7 @@ LOGGING = {
             'handlers': ['file'],
             'propagate': True,
         }
-    }
+    },
 }
 
 DJOSER = {
@@ -151,5 +148,5 @@ DJOSER = {
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['rest_framework.permissions.IsAuthenticated'],
-    }
+    },
 }
