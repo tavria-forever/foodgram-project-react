@@ -1,5 +1,6 @@
 from django.db import IntegrityError
-from django.http import Http404
+from django.db.models import Sum
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
@@ -10,12 +11,13 @@ from rest_framework.response import Response
 
 from recipes.models import FavouriteRecipe, Ingredient, Recipe, Tag
 from users.models import Follow, User
+from shopping_cart.models import ShoppingOrder
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (FavouriteSerializer, FollowSerializer,
                           IngredientSerializer,
-                          RecipeSerializer, TagSerializer)
+                          RecipeSerializer, TagSerializer, ShoppingCartSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -40,14 +42,42 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_queryset(self):
-        is_favorited = self.request.query_params.get('is_favorited', None)
+        user = self.request.user
+        query_params = self.request.query_params
+        is_favorited = query_params.get('is_favorited', None)
+        is_in_shopping_cart = query_params.get('is_in_shopping_cart', None)
         recipe_query = Recipe.objects.select_related('author')
+        # filter_recipes_id = []
+
         if is_favorited is not None:
-            favorite_recipes_id = (
-                self.request.user.favourites
-                .values_list('recipe', flat=True)
-            )
-            return recipe_query.filter(pk__in=favorite_recipes_id)
+            return recipe_query.filter(favourites__user=user)
+
+            # favorite_recipes_id = (
+            #     self.request.user.favourites
+            #     .values_list('recipe', flat=True)
+            # )
+            #
+            # if len(favorite_recipes_id) > 0:
+            #     filter_recipes_id = filter_recipes_id + [*favorite_recipes_id]
+
+        if is_in_shopping_cart is not None:
+            return recipe_query.filter(shopping_orders__user=user)
+
+            # print(f'!!!!!!!!!!!!!!!!!!!!!tmp: {tmp}')
+            #
+            # shopping_card_recipes_id = (
+            #     self.request.user.shopping_orders
+            #     .values_list('recipe', flat=True)
+            # )
+            #
+            # if len(shopping_card_recipes_id) > 0:
+            #     filter_recipes_id = filter_recipes_id + [*shopping_card_recipes_id]
+
+        # if len(filter_recipes_id) > 0:
+        #     return recipe_query.filter(pk__in=filter_recipes_id)
+        # elif (is_favorited is not None or is_in_shopping_cart is not None) and len(filter_recipes_id) == 0:
+        #     return Recipe.objects.none()
+
         return recipe_query.all()
 
     def get_permissions(self):
@@ -77,7 +107,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
                 headers = self.get_success_headers(serializer.data)
-                return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             except ValidationError as e:
                 return Response(
                     {'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST
@@ -91,6 +121,71 @@ class RecipeViewSet(viewsets.ModelViewSet):
             try:
                 instance = get_object_or_404(
                     FavouriteRecipe, user=self.request.user, recipe=kwargs.get('pk')
+                )
+                self.perform_destroy(instance)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Http404:
+                return Response(
+                    {'errors': 'Избранный рецепт не найден'},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='download_shopping_cart',
+        permission_classes=(IsAuthenticated,),
+    )
+    def download_shopping_cart(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            shopping_recipes = Recipe.objects.filter(shopping_orders__user=user)
+            ingredients = shopping_recipes.values_list(
+                'recipeingredient__ingredient__name',
+                'recipeingredient__ingredient__measurement_unit'
+            ).order_by('recipeingredient__ingredient__name')
+            total = ingredients.annotate(amount=Sum('recipeingredient__amount'))
+            shopping_cart = 'Список ингредиентов для покупки:'
+            for index, ingredient in enumerate(total):
+                shopping_cart += f'\n- {ingredient[0]}: {ingredient[2]} {ingredient[1]}'
+            return HttpResponse(
+                shopping_cart,
+                content_type='text/plain'
+            )
+        except:
+            raise Exception('Список покупок пуст')
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        url_path='shopping_cart',
+        permission_classes=(IsAuthenticated,),
+    )
+    def create_destroy_shopping_order(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            try:
+                data = {
+                    'user': self.request.user.id,
+                    'recipe': kwargs.get('pk')
+                }
+                serializer = ShoppingCartSerializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            except ValidationError as e:
+                return Response(
+                    {'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST
+                )
+            except IntegrityError:
+                return Response(
+                    {'errors': 'Пользователь уже добавил в корзину этот рецепт'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if request.method == 'DELETE':
+            try:
+                instance = get_object_or_404(
+                    ShoppingOrder, user=self.request.user, recipe=kwargs.get('pk')
                 )
                 self.perform_destroy(instance)
                 return Response(status=status.HTTP_204_NO_CONTENT)

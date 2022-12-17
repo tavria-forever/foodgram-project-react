@@ -5,6 +5,7 @@ from rest_framework import serializers
 from recipes.models import (FavouriteRecipe, Ingredient, Recipe,
                             RecipeIngredient, Tag)
 from users.models import Follow, User
+from shopping_cart.models import ShoppingOrder
 
 from .fields import RecipeImageField
 
@@ -133,7 +134,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return self.context['request'].user.favourites.filter(recipe=obj.id).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        return True
+        return self.context['request'].user.shopping_orders.filter(recipe=obj.id).exists()
 
     class Meta:
         ordering = ('-id',)
@@ -189,4 +190,18 @@ class FavouriteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = FavouriteRecipe
+        fields = '__all__'
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        return {
+            'id': instance.recipe.id,
+            'name': instance.recipe.name,
+            'image': str(instance.recipe.image),
+            'cooking_time': instance.recipe.cooking_time,
+        }
+
+    class Meta:
+        model = ShoppingOrder
         fields = '__all__'
