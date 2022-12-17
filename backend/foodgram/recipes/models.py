@@ -98,9 +98,7 @@ class RecipeTag(models.Model):
     )
 
     def __str__(self):
-        return (
-            f'Тег {self.tag} в рецепте {self.recipe}'
-        )
+        return f'Тег {self.tag} в рецепте {self.recipe}'
 
 
 class RecipeIngredient(models.Model):
@@ -109,9 +107,7 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField()
 
     def __str__(self):
-        return (
-            f'Ингредиент {self.ingredient} в рецепте {self.recipe}'
-        )
+        return f'Ингредиент {self.ingredient} в рецепте {self.recipe}'
 
 
 class FavouriteRecipe(models.Model):
@@ -136,6 +132,4 @@ class FavouriteRecipe(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f'Пользователь {self.user} добавил рецепт {self.recipe} в избранное'
-        )
+        return f'Пользователь {self.user} добавил рецепт {self.recipe} в избранное'

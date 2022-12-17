@@ -1,8 +1,15 @@
 from django.contrib import admin
 
 from .forms import TagModelForm
-from .models import (Ingredient, MeasurementUnit, Recipe, RecipeIngredient,
-                     RecipeTag, Tag, FavouriteRecipe)
+from .models import (
+    FavouriteRecipe,
+    Ingredient,
+    MeasurementUnit,
+    Recipe,
+    RecipeIngredient,
+    RecipeTag,
+    Tag,
+)
 
 
 @admin.register(Tag)
@@ -35,20 +42,26 @@ class RecipeTagInline(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'text', 'cooking_time']
-    list_filter = ('name', 'author', 'tags',)
+    list_filter = (
+        'name',
+        'author',
+        'tags',
+    )
     list_select_related = True
     search_fields = ('name',)
     inlines = (
         RecipeIngredientInline,
         RecipeTagInline,
     )
-    
+
     def change_view(self, request, object_id, form_url='', extra_content=None):
-        in_favorites_count = FavouriteRecipe.objects.filter(recipe=object_id).count()
-        context = {
-            'in_favorites_count': in_favorites_count
-        }
-        return super(RecipeAdmin, self).change_view(request, object_id, form_url, context)
+        in_favorites_count = FavouriteRecipe.objects.filter(
+            recipe=object_id
+        ).count()
+        context = {'in_favorites_count': in_favorites_count}
+        return super(RecipeAdmin, self).change_view(
+            request, object_id, form_url, context
+        )
 
 
 admin.site.register(MeasurementUnit)

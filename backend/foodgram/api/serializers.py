@@ -1,11 +1,19 @@
-from djoser.serializers import \
-    UserCreateSerializer as BaseDjoserUserCreateSerializer
-from rest_framework import serializers
 import collections.abc
-from recipes.models import (FavouriteRecipe, Ingredient, Recipe,
-                            RecipeIngredient, Tag)
-from users.models import Follow, User
+
+from djoser.serializers import (
+    UserCreateSerializer as BaseDjoserUserCreateSerializer,
+)
+from rest_framework import serializers
+
+from recipes.models import (
+    FavouriteRecipe,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Tag,
+)
 from shopping_cart.models import ShoppingOrder
+from users.models import Follow, User
 
 from .fields import RecipeImageField
 
@@ -52,13 +60,22 @@ class UserCreateSerializer(BaseDjoserUserCreateSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'slug', 'color',)
+        fields = (
+            'id',
+            'name',
+            'slug',
+            'color',
+        )
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit',)
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+        )
 
 
 class IngredientRecipeSerializer(serializers.HyperlinkedModelSerializer):
@@ -110,14 +127,28 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate(self, data):
         tags = self.initial_data.get('tags')
         if tags is None:
-            raise serializers.ValidationError(detail='Cписок id тегов обязателен для заполнения')
-        elif isinstance(tags, collections.abc.Sequence) is False or len(tags) == 0:
-            raise serializers.ValidationError(detail='Передан невалидный список id тегов')
+            raise serializers.ValidationError(
+                detail='Cписок id тегов обязателен для заполнения'
+            )
+        elif (
+            isinstance(tags, collections.abc.Sequence) is False
+            or len(tags) == 0
+        ):
+            raise serializers.ValidationError(
+                detail='Передан невалидный список id тегов'
+            )
         ingredients = self.initial_data.get('ingredients')
         if ingredients is None:
-            raise serializers.ValidationError(detail='Cписок ингредиентов обязателен для заполнения')
-        elif isinstance(ingredients, collections.abc.Sequence) is False or len(ingredients) == 0:
-            raise serializers.ValidationError(detail='Передан невалидный список ингредиентов')
+            raise serializers.ValidationError(
+                detail='Cписок ингредиентов обязателен для заполнения'
+            )
+        elif (
+            isinstance(ingredients, collections.abc.Sequence) is False
+            or len(ingredients) == 0
+        ):
+            raise serializers.ValidationError(
+                detail='Передан невалидный список ингредиентов'
+            )
 
         return data
 
@@ -173,9 +204,11 @@ class FollowSerializer(serializers.ModelSerializer):
             'recipes_limit', None
         )
         if recipes_limit is not None:
-            recipe_instances = recipe_instances[:int(recipes_limit)]
+            recipe_instances = recipe_instances[: int(recipes_limit)]
         recipes = []
-        for recipe in recipe_instances.values('id', 'name', 'image', 'cooking_time'):
+        for recipe in recipe_instances.values(
+            'id', 'name', 'image', 'cooking_time'
+        ):
             recipes.append(
                 {
                     'id': recipe.get('id'),
@@ -184,7 +217,7 @@ class FollowSerializer(serializers.ModelSerializer):
                     'cooking_time': recipe.get('cooking_time'),
                 }
             )
-        
+
         return {
             'id': instance.author.id,
             'email': instance.author.email,
@@ -209,7 +242,7 @@ class FavouriteSerializer(serializers.ModelSerializer):
             'image': str(instance.recipe.image),
             'cooking_time': instance.recipe.cooking_time,
         }
-    
+
     class Meta:
         model = FavouriteRecipe
         fields = '__all__'
