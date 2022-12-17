@@ -1,14 +1,8 @@
 from django.contrib import admin
 
 from .forms import TagModelForm
-from .models import (
-    Ingredient,
-    MeasurementUnit,
-    Recipe,
-    RecipeIngredient,
-    RecipeTag,
-    Tag,
-)
+from .models import (Ingredient, MeasurementUnit, Recipe, RecipeIngredient,
+                     RecipeTag, Tag)
 
 
 @admin.register(Tag)

@@ -13,14 +13,9 @@ from users.models import Follow, User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsOwnerOrReadOnly
-from .serializers import (
-    FavouriteSerializer,
-    FollowCreateDeleteSerializer,
-    FollowListSerializer,
-    IngredientSerializer,
-    RecipeSerializer,
-    TagSerializer,
-)
+from .serializers import (FavouriteSerializer, FollowCreateDeleteSerializer,
+                          FollowListSerializer, IngredientSerializer,
+                          RecipeSerializer, TagSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

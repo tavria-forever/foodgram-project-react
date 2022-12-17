@@ -1,15 +1,9 @@
-from djoser.serializers import (
-    UserCreateSerializer as BaseDjoserUserCreateSerializer,
-)
+from djoser.serializers import \
+    UserCreateSerializer as BaseDjoserUserCreateSerializer
 from rest_framework import serializers
 
-from recipes.models import (
-    FavouriteRecipe,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    Tag,
-)
+from recipes.models import (FavouriteRecipe, Ingredient, Recipe,
+                            RecipeIngredient, Tag)
 from users.models import Follow, User
 
 from .fields import RecipeImageField
