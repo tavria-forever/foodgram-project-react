@@ -7,7 +7,7 @@ from .models import Tag
 class TagModelForm(ModelForm):
     class Meta:
         model = Tag
-        fields = "__all__"
+        fields = '__all__'
         widgets = {
             "color": TextInput(attrs={"type": "color"}),
         }

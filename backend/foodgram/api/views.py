@@ -200,9 +200,11 @@ class FollowListViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Follow.objects.all()
     serializer_class = FollowSerializer
-
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Follow.objects.filter(user=user)
 
 class FollowCreateDestroyViewSet(
     mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet

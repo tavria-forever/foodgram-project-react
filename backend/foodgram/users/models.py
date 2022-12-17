@@ -49,6 +49,5 @@ class Follow(models.Model):
 
     def __str__(self):
         return (
-            f'Subscription(id={self.id}, user_id={self.user_id}, author_id'
-            f'={self.author_id})'
+            f'Пользователь {self.user} подписан на автора {self.author}'
         )

@@ -24,6 +24,5 @@ class ShoppingOrder(models.Model):
 
     def __str__(self):
         return (
-            f'ShoppingOrder(id={self.id}, user_id={self.user_id}, recipe_id'
-            f'={self.recipe_id})'
+            f'Пользователь {self.user} добавил в корзину рецепт {self.recipe}'
         )

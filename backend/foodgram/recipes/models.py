@@ -20,7 +20,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
 
     def __str__(self):
-        return f'{self.name[:15]} {self.slug[:15]}, {self.color}'
+        return f'{self.name[:15]}'
 
 
 class MeasurementUnit(models.Model):
@@ -56,8 +56,8 @@ class Ingredient(models.Model):
             'name',
             'measurement_unit',
         )
-        verbose_name = 'Ингридиент'
-        verbose_name_plural = 'Ингридиенты'
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return f'{self.name[:15]} / {self.measurement_unit}'
@@ -86,7 +86,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'{self.name[:15]} {self.tags}'
+        return f'{self.name[:15]}'
 
 
 class RecipeTag(models.Model):
@@ -99,8 +99,7 @@ class RecipeTag(models.Model):
 
     def __str__(self):
         return (
-            f'RecipeTag(id={self.id}, recipe_id={self.recipe}, tag_id'
-            f'={self.tag})'
+            f'Тег {self.tag} в рецепте {self.recipe}'
         )
 
 
@@ -111,8 +110,7 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
         return (
-            f'RecipeIngredient(id={self.id}, recipe_id={self.recipe}, ingredient_id'
-            f'={self.ingredient}, amount={self.amount})'
+            f'Ингредиент {self.ingredient} в рецепте {self.recipe}'
         )
 
 
@@ -139,6 +137,5 @@ class FavouriteRecipe(models.Model):
 
     def __str__(self):
         return (
-            f'FavouriteRecipe(id={self.id}, user={self.user}, recipe'
-            f'={self.recipe})'
+            f'Пользователь {self.user} добавил рецепт {self.recipe} в избранное'
         )

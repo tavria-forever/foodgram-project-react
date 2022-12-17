@@ -1,7 +1,7 @@
 from djoser.serializers import \
     UserCreateSerializer as BaseDjoserUserCreateSerializer
 from rest_framework import serializers
-
+import collections.abc
 from recipes.models import (FavouriteRecipe, Ingredient, Recipe,
                             RecipeIngredient, Tag)
 from users.models import Follow, User
@@ -13,11 +13,13 @@ from .fields import RecipeImageField
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
+    def get_is_subscribed(self, instance):
+        current_user = self.context.get('request').user
+        if instance.id == current_user.id:
             return False
-        return user.follower.filter(author=obj.id).exists()
+        if current_user.is_anonymous:
+            return False
+        return instance.following.filter(user=current_user).exists()
 
     class Meta:
         model = User
@@ -50,13 +52,13 @@ class UserCreateSerializer(BaseDjoserUserCreateSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'slug', 'color',)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class IngredientRecipeSerializer(serializers.HyperlinkedModelSerializer):
@@ -105,6 +107,20 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
+    def validate(self, data):
+        tags = self.initial_data.get('tags')
+        if tags is None:
+            raise serializers.ValidationError(detail='Cписок id тегов обязателен для заполнения')
+        elif isinstance(tags, collections.abc.Sequence) is False or len(tags) == 0:
+            raise serializers.ValidationError(detail='Передан невалидный список id тегов')
+        ingredients = self.initial_data.get('ingredients')
+        if ingredients is None:
+            raise serializers.ValidationError(detail='Cписок ингредиентов обязателен для заполнения')
+        elif isinstance(ingredients, collections.abc.Sequence) is False or len(ingredients) == 0:
+            raise serializers.ValidationError(detail='Передан невалидный список ингредиентов')
+
+        return data
+
     def create(self, validated_data):
         raw_data = self.context['request'].data
         recipe_instance = Recipe.objects.create(**validated_data)
@@ -131,10 +147,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
     def get_is_favorited(self, obj):
-        return self.context['request'].user.favourites.filter(recipe=obj.id).exists()
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.favourites.filter(recipe=obj.id).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        return self.context['request'].user.shopping_orders.filter(recipe=obj.id).exists()
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.shopping_orders.filter(recipe=obj.id).exists()
 
     class Meta:
         ordering = ('-id',)
