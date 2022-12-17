@@ -130,7 +130,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
     def get_is_favorited(self, obj):
-        return True
+        return self.context['request'].user.favourites.filter(recipe=obj.id).exists()
 
     def get_is_in_shopping_cart(self, obj):
         return True
@@ -141,62 +141,52 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class FollowCreateDeleteSerializer(serializers.ModelSerializer):
+class FollowSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        recipe_instances = instance.author.recipes.filter(
+            author=instance.author.id,
+        ).order_by('-id')
+        recipes_limit = self.context['request'].query_params.get(
+            'recipes_limit', None
+        )
+        if recipes_limit is not None:
+            recipe_instances = recipe_instances[:int(recipes_limit)]
+        recipes = []
+        for recipe in recipe_instances.values('id', 'name', 'image', 'cooking_time'):
+            recipes.append(
+                {
+                    'id': recipe.get('id'),
+                    'name': recipe.get('name'),
+                    'image': recipe.get('image'),
+                    'cooking_time': recipe.get('cooking_time'),
+                }
+            )
+        
+        return {
+            'id': instance.author.id,
+            'email': instance.author.email,
+            'username': instance.author.username,
+            'first_name': instance.author.first_name,
+            'last_name': instance.author.last_name,
+            'recipes_count': instance.author.recipes.count(),
+            'is_subscribed': True,
+            'recipes': recipes,
+        }
+
     class Meta:
         model = Follow
         fields = '__all__'
 
 
-class FollowListSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='author.id')
-    email = serializers.ReadOnlyField(source='author.email')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
-    is_subscribed = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
-
-    def get_is_subscribed(self, obj):
-        return True
-
-    def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author_id).count()
-
-    def get_recipes(self, obj):
-        recipes_limit = self.context['request'].query_params.get(
-            'recipes_limit', None
-        )
-        recipe_instances = Recipe.objects.filter(
-            author=obj.author_id
-        ).order_by('-id')[: int(recipes_limit)]
-        recipes = []
-        for item in recipe_instances.values():
-            recipes.append(
-                {
-                    'id': item.get('id'),
-                    'name': item.get('name'),
-                    'image': item.get('image'),
-                    'cooking_time': item.get('cooking_time'),
-                }
-            )
-        return recipes
-
-    class Meta:
-        model = Follow
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-        )
-
-
 class FavouriteSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        return {
+            'id': instance.recipe.id,
+            'name': instance.recipe.name,
+            'image': str(instance.recipe.image),
+            'cooking_time': instance.recipe.cooking_time,
+        }
+    
     class Meta:
         model = FavouriteRecipe
-        fields = ('__all__',)
+        fields = '__all__'

@@ -13,8 +13,8 @@ from users.models import Follow, User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsOwnerOrReadOnly
-from .serializers import (FavouriteSerializer, FollowCreateDeleteSerializer,
-                          FollowListSerializer, IngredientSerializer,
+from .serializers import (FavouriteSerializer, FollowSerializer,
+                          IngredientSerializer,
                           RecipeSerializer, TagSerializer)
 
 
@@ -35,10 +35,20 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.select_related('author').all()
     serializer_class = RecipeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def get_queryset(self):
+        is_favorited = self.request.query_params.get('is_favorited', None)
+        recipe_query = Recipe.objects.select_related('author')
+        if is_favorited is not None:
+            favorite_recipes_id = (
+                self.request.user.favourites
+                .values_list('recipe', flat=True)
+            )
+            return recipe_query.filter(pk__in=favorite_recipes_id)
+        return recipe_query.all()
 
     def get_permissions(self):
         if self.action in ['partial_update', 'destroy']:
@@ -50,12 +60,45 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    # @action(
-    #     methods=['get', 'patch'],
-    #     detail=False,
-    #     url_path='me',
-    #     permission_classes=(IsAuthenticated,),
-    # )
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        url_path='favorite',
+        permission_classes=(IsAuthenticated,),
+    )
+    def create_destroy_favorite(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            try:
+                data = {
+                    'user': self.request.user.id,
+                    'recipe': kwargs.get('pk')
+                }
+                serializer = FavouriteSerializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+            except ValidationError as e:
+                return Response(
+                    {'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST
+                )
+            except IntegrityError:
+                return Response(
+                    {'errors': 'Пользователь уже подписан на этот рецепт'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if request.method == 'DELETE':
+            try:
+                instance = get_object_or_404(
+                    FavouriteRecipe, user=self.request.user, recipe=kwargs.get('pk')
+                )
+                self.perform_destroy(instance)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Http404:
+                return Response(
+                    {'errors': 'Избранный рецепт не найден'},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
 
 class FollowListViewSet(
@@ -63,14 +106,14 @@ class FollowListViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = Follow.objects.all()
-    serializer_class = FollowListSerializer
+    serializer_class = FollowSerializer
 
 
 class FollowCreateDestroyViewSet(
     mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
     queryset = Follow.objects.all()
-    serializer_class = FollowCreateDeleteSerializer
+    serializer_class = FollowSerializer
 
     def create(self, request, *args, **kwargs):
         try:
