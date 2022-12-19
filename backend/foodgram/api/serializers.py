@@ -4,6 +4,7 @@ from djoser.serializers import (
     UserCreateSerializer as BaseDjoserUserCreateSerializer,
 )
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from recipes.models import (
     FavouriteRecipe,
@@ -196,6 +197,23 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    def validate(self, data):
+        user = data.get('user')
+        author = data.get('author')
+        if user == author:
+            raise ValidationError(
+                detail='Нельзя подписываться на самого себя'
+            )
+        if Follow.objects.filter(author=author, user=user).exists():
+            raise ValidationError(
+                detail='Пользователь уже подписан'
+            )
+        return data
+
     def to_representation(self, instance):
         recipe_instances = instance.author.recipes.filter(
             author=instance.author.id,
@@ -235,6 +253,16 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class FavouriteSerializer(serializers.ModelSerializer):
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+
+        if FavouriteRecipe.objects.filter(recipe=recipe, user=user).exists():
+            raise ValidationError(
+                detail='Пользователь уже подписан на этот рецепт'
+            )
+        return data
+
     def to_representation(self, instance):
         return {
             'id': instance.recipe.id,
@@ -249,6 +277,16 @@ class FavouriteSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+        
+        if ShoppingOrder.objects.filter(recipe=recipe, user=user).exists():
+            raise ValidationError(
+                detail='Пользователь уже добавил в корзину этот рецепт'
+            )
+        return data
+
     def to_representation(self, instance):
         return {
             'id': instance.recipe.id,

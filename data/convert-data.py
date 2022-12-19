@@ -1,4 +1,9 @@
 import json
+import logging
+
+log_format = "%(asctime)s::%(levelname)s::%(filename)s::%(message)s"
+logging.basicConfig(level='INFO', format=log_format)
+
 
 with open('ingredients.json') as fileIngredients:
     result = []
@@ -7,7 +12,7 @@ with open('ingredients.json') as fileIngredients:
 
     for index, ingredient in enumerate(json_data):
         if ingredient["measurement_unit"] in pushed_units:
-            print(f'skip {ingredient["measurement_unit"]}')
+            logging.info(f'skip {ingredient["measurement_unit"]}')
         else:
             pushed_units.append(ingredient["measurement_unit"])
             result.append({

@@ -13,6 +13,7 @@ class ShoppingOrder(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -24,5 +25,5 @@ class ShoppingOrder(models.Model):
 
     def __str__(self):
         return (
-            f'Пользователь {self.user} добавил в корзину рецепт {self.recipe}'
+            f'pk: {self.id} пользователь {self.user} добавил в корзину рецепт {self.recipe}'
         )

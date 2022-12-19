@@ -1,17 +1,15 @@
-from django.db import IntegrityError
 from django.db.models import Sum
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import FavouriteRecipe, Ingredient, Recipe, Tag
 from shopping_cart.models import ShoppingOrder
-from users.models import Follow, User
+from users.models import Follow
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsOwnerOrReadOnly
@@ -76,43 +74,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def create_destroy_favorite(self, request, *args, **kwargs):
         if request.method == 'POST':
-            try:
-                data = {
-                    'user': self.request.user.id,
-                    'recipe': kwargs.get('pk'),
-                }
-                serializer = FavouriteSerializer(data=data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                headers = self.get_success_headers(serializer.data)
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED,
-                    headers=headers,
-                )
-            except ValidationError as e:
-                return Response(
-                    {'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST
-                )
-            except IntegrityError:
-                return Response(
-                    {'errors': 'Пользователь уже подписан на этот рецепт'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            data = {
+                'user': self.request.user.id,
+                'recipe': kwargs.get('pk'),
+            }
+            serializer = FavouriteSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers,
+            )
         if request.method == 'DELETE':
-            try:
-                instance = get_object_or_404(
-                    FavouriteRecipe,
-                    user=self.request.user,
-                    recipe=kwargs.get('pk'),
-                )
-                self.perform_destroy(instance)
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Http404:
-                return Response(
-                    {'errors': 'Избранный рецепт не найден'},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            instance = get_object_or_404(
+                FavouriteRecipe,
+                user=self.request.user,
+                recipe=kwargs.get('pk'),
+            )
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -150,45 +132,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def create_destroy_shopping_order(self, request, *args, **kwargs):
         if request.method == 'POST':
-            try:
-                data = {
-                    'user': self.request.user.id,
-                    'recipe': kwargs.get('pk'),
-                }
-                serializer = ShoppingCartSerializer(data=data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                headers = self.get_success_headers(serializer.data)
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED,
-                    headers=headers,
-                )
-            except ValidationError as e:
-                return Response(
-                    {'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST
-                )
-            except IntegrityError:
-                return Response(
-                    {
-                        'errors': 'Пользователь уже добавил в корзину этот рецепт'
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            data = {
+                'user': self.request.user.id,
+                'recipe': kwargs.get('pk'),
+            }
+            serializer = ShoppingCartSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers,
+            )
         if request.method == 'DELETE':
-            try:
-                instance = get_object_or_404(
-                    ShoppingOrder,
-                    user=self.request.user,
-                    recipe=kwargs.get('pk'),
-                )
-                self.perform_destroy(instance)
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Http404:
-                return Response(
-                    {'errors': 'Избранный рецепт не найден'},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            instance = get_object_or_404(
+                ShoppingOrder,
+                user=self.request.user,
+                recipe=kwargs.get('pk'),
+            )
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FollowListViewSet(
@@ -196,6 +160,7 @@ class FollowListViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = FollowSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user = self.request.user
@@ -209,50 +174,23 @@ class FollowCreateDestroyViewSet(
     serializer_class = FollowSerializer
 
     def create(self, request, *args, **kwargs):
-        try:
-            current_user_id = self.request.user.id
-            author = get_object_or_404(User, pk=kwargs.get('author_id'))
-            if author.id == current_user_id:
-                raise ValidationError(
-                    detail='Нельзя подписываться на самого себя'
-                )
-            data = {'user': current_user_id, 'author': author.id}
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid(raise_exception=True):
-                self.perform_create(serializer)
-                headers = self.get_success_headers(serializer.data)
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED,
-                    headers=headers,
-                )
-        except Http404:
-            return Response(
-                {'errors': 'Пользователь не найден'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except IntegrityError:
-            return Response(
-                {'errors': 'Пользователь уже подписан'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except ValidationError as e:
-            return Response(
-                {'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST
-            )
+        data = {'author': kwargs.get('author_id')}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
     def delete(self, request, *args, **kwargs):
-        try:
-            instance = get_object_or_404(
-                Follow, user=self.request.user, author=kwargs.get('author_id')
-            )
-            self.perform_destroy(instance)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Http404:
-            return Response(
-                {'errors': 'Пользователь не найден'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        instance = get_object_or_404(
+            Follow, user=self.request.user, author=kwargs.get('author_id')
+        )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FavouriteCreateDestroyViewSet(

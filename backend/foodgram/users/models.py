@@ -15,6 +15,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
+        ordering = ('-id',)
         constraints = [
             models.UniqueConstraint(
                 fields=['username', 'email'], name='user_unique_username_email'
@@ -25,7 +26,9 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
-        return str(self.username)
+        return (
+            f'pk: {self.id} email={self.email}'
+        )
 
 
 class Follow(models.Model):
@@ -37,6 +40,7 @@ class Follow(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
@@ -48,4 +52,4 @@ class Follow(models.Model):
         verbose_name_plural = 'Подписки'
 
     def __str__(self):
-        return f'Пользователь {self.user} подписан на автора {self.author}'
+        return f'pk: {self.id} пользователь {self.user} подписан на автора {self.author}'
