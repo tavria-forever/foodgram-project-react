@@ -12,10 +12,18 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='follow',
-            options={'ordering': ('-id',), 'verbose_name': 'Подписка', 'verbose_name_plural': 'Подписки'},
+            options={
+                'ordering': ('-id',),
+                'verbose_name': 'Подписка',
+                'verbose_name_plural': 'Подписки',
+            },
         ),
         migrations.AlterModelOptions(
             name='user',
-            options={'ordering': ('-id',), 'verbose_name': 'Пользователь', 'verbose_name_plural': 'Пользователи'},
+            options={
+                'ordering': ('-id',),
+                'verbose_name': 'Пользователь',
+                'verbose_name_plural': 'Пользователи',
+            },
         ),
     ]

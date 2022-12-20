@@ -20,9 +20,7 @@ router.register(
     FollowCreateDestroyViewSet,
     basename='subscribe',
 )
-router.register(
-    r'users/subscriptions', FollowListViewSet, basename='subscriptions'
-)
+router.register(r'users/subscriptions', FollowListViewSet, basename='subscriptions')
 urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls')),

@@ -1,11 +1,24 @@
 # Проект «Foodgram»
+
+Проект сделан в декабре 2022 года, в рамках дипломной работы на курсе Яндекс.Практикум "Python-разработчик". 
+
+- Основной проект https://myfoodgram.ddns.net/
+- Админка https://myfoodgram.ddns.net/admin/
+- API https://myfoodgram.ddns.net/api/
+
+## Директории
+
+- `backend` - API для фронтенда на django 2.2 + django-rest-framework 3.12 + postgresql 13
+- `docs` - Документация к API, доступна по адресу https://myfoodgram.ddns.net/api/docs/ 
+- `frontend` - исходники клиентской части на `React.js`, работает без сервера, статика собирается во время запуска `docker-compose` и раздаётся c помощью `nginx`.
+- `infra` - содержит конфигурации для запуска проекта целиком `docker-compose` и `nginx`. 
                             
 ## API
 
 ### Требования
 
-- python@3.7.x (возможно работает на версиях выше, но не тестировалось)
-- docker
+- Python@3.7.x (возможно работает на версиях выше, но не тестировалось)
+- Docker
           
 ### Разработка
 
@@ -54,7 +67,7 @@ docker-compose exec django python manage.py loaddata fixtures.json
 docker-compose exec django python manage.py createsuperuser
 ```
 
-После этого будут доступны:
+После этого локально на компьютере будут доступны:
 
 - Описание эндпоинтов API http://localhost/api/docs/
 - Клиентская часть http://localhost/
@@ -70,6 +83,42 @@ docker-compose exec django python manage.py createsuperuser
 | POST      | http://localhost:8000/api/auth/token/login | {"email": "<указать email>", "password": "<указать пароль>"} |
 
 Полученный токен использовать в запросах указая в заголовке `Authorization: token <полученный токен>`.
+
+### Линтеры
+
+Установите пре-коммит хуки
+```bash
+   pre-commit install
+```
+
+После этого на `git` коммиты будет запускаться модуль `black` для автоформатирования кода и `flake8` для проверки кода на соответствие `PEP8`.
+             
+
+## CI
+
+Для удобства разработки и деплоя, настроен CI через github actions. Конфигурация расположена в директории [.github/workflows/foodgram_workflow.yml](./.github/workflows/foodgram_workflow.yml).
+
+При каждом `push` в ветку `master`:
+- линтинг файлов с помощью Flake8;
+- сборка и загрузка докер образа c файлами API в репозиторий [tavriaforever/foodgram-backend](https://hub.docker.com/repository/docker/tavriaforever/foodgram-backend);
+- деплой проекта на боевой сервер в Яндекс.Облако.
+
+## HTTPS сертификаты
+
+Для боевого сервера сгенерированы сертификаты через [certbot](https://github.com/certbot/certbot).
+
+Если понадобиться пересоздать:
+                     
+1. Создать сертификат для установки в nginx
+```bash
+sudo certbot certonly -d myfoodgram.ddns.net
+```
+
+2. Убедиться, что указан сертификат с текущим доменом в [infra/nginx/default.conf](./infra/nginx/default.conf) конфиге для боевого сервера.
+```bash
+ssl_certificate /etc/letsencrypt/live/myfoodgram.ddns.net/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/myfoodgram.ddns.net/privkey.pem;
+```
 
 ## Автор проекта
 

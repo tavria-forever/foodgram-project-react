@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -26,18 +26,12 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
-        return (
-            f'pk: {self.id} email={self.email}'
-        )
+        return f'pk: {self.id} email={self.email}'
 
 
 class Follow(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower'
-    )
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following'
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
 
     class Meta:
         ordering = ('-id',)
@@ -52,4 +46,6 @@ class Follow(models.Model):
         verbose_name_plural = 'Подписки'
 
     def __str__(self):
-        return f'pk: {self.id} пользователь {self.user} подписан на автора {self.author}'
+        return (
+            f'pk: {self.id} пользователь {self.user} подписан на автора {self.author}'
+        )

@@ -96,9 +96,7 @@ class IngredientRecipeSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-def add_recipe_tags_ingredients(
-    recipe_instance, tag_ids=None, ingredients_data=None
-):
+def add_recipe_tags_ingredients(recipe_instance, tag_ids=None, ingredients_data=None):
     if tag_ids is not None:
         tags = Tag.objects.filter(pk__in=tag_ids)
         recipe_instance.tags.set(tags)
@@ -131,10 +129,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail='Cписок id тегов обязателен для заполнения'
             )
-        elif (
-            isinstance(tags, collections.abc.Sequence) is False
-            or len(tags) == 0
-        ):
+        elif isinstance(tags, collections.abc.Sequence) is False or len(tags) == 0:
             raise serializers.ValidationError(
                 detail='Передан невалидный список id тегов'
             )
@@ -197,36 +192,26 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     def validate(self, data):
         user = data.get('user')
         author = data.get('author')
         if user == author:
-            raise ValidationError(
-                detail='Нельзя подписываться на самого себя'
-            )
+            raise ValidationError(detail='Нельзя подписываться на самого себя')
         if Follow.objects.filter(author=author, user=user).exists():
-            raise ValidationError(
-                detail='Пользователь уже подписан'
-            )
+            raise ValidationError(detail='Пользователь уже подписан')
         return data
 
     def to_representation(self, instance):
         recipe_instances = instance.author.recipes.filter(
             author=instance.author.id,
         ).order_by('-id')
-        recipes_limit = self.context['request'].query_params.get(
-            'recipes_limit', None
-        )
+        recipes_limit = self.context['request'].query_params.get('recipes_limit', None)
         if recipes_limit is not None:
             recipe_instances = recipe_instances[: int(recipes_limit)]
         recipes = []
-        for recipe in recipe_instances.values(
-            'id', 'name', 'image', 'cooking_time'
-        ):
+        for recipe in recipe_instances.values('id', 'name', 'image', 'cooking_time'):
             recipes.append(
                 {
                     'id': recipe.get('id'),
@@ -258,9 +243,7 @@ class FavouriteSerializer(serializers.ModelSerializer):
         recipe = data.get('recipe')
 
         if FavouriteRecipe.objects.filter(recipe=recipe, user=user).exists():
-            raise ValidationError(
-                detail='Пользователь уже подписан на этот рецепт'
-            )
+            raise ValidationError(detail='Пользователь уже подписан на этот рецепт')
         return data
 
     def to_representation(self, instance):
@@ -280,7 +263,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = data.get('user')
         recipe = data.get('recipe')
-        
+
         if ShoppingOrder.objects.filter(recipe=recipe, user=user).exists():
             raise ValidationError(
                 detail='Пользователь уже добавил в корзину этот рецепт'
