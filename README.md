@@ -3,8 +3,13 @@
 Проект сделан в декабре 2022 года, в рамках дипломной работы на курсе Яндекс.Практикум "Python-разработчик". 
 
 - Основной проект https://myfoodgram.ddns.net/
-- Админка https://myfoodgram.ddns.net/admin/
 - API https://myfoodgram.ddns.net/api/
+
+## Админка 
+           
+- Адрес: https://myfoodgram.ddns.net/admin/
+- Email: admin@admin.ru
+- Второе поле: test_password_2022
 
 ## Директории
 
