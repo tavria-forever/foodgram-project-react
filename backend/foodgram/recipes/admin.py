@@ -55,9 +55,7 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
     def change_view(self, request, object_id, form_url='', extra_content=None):
-        in_favorites_count = FavouriteRecipe.objects.filter(
-            recipe=object_id
-        ).count()
+        in_favorites_count = FavouriteRecipe.objects.filter(recipe=object_id).count()
         context = {'in_favorites_count': in_favorites_count}
         return super(RecipeAdmin, self).change_view(
             request, object_id, form_url, context

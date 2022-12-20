@@ -105,21 +105,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request, *args, **kwargs):
         user = request.user
         try:
-            shopping_recipes = Recipe.objects.filter(
-                shopping_orders__user=user
-            )
+            shopping_recipes = Recipe.objects.filter(shopping_orders__user=user)
             ingredients = shopping_recipes.values_list(
                 'recipeingredient__ingredient__name',
                 'recipeingredient__ingredient__measurement_unit',
             ).order_by('recipeingredient__ingredient__name')
-            total = ingredients.annotate(
-                amount=Sum('recipeingredient__amount')
-            )
+            total = ingredients.annotate(amount=Sum('recipeingredient__amount'))
             shopping_cart = 'Список ингредиентов для покупки:'
             for index, ingredient in enumerate(total):
-                shopping_cart += (
-                    f'\n- {ingredient[0]}: {ingredient[2]} {ingredient[1]}'
-                )
+                shopping_cart += f'\n- {ingredient[0]}: {ingredient[2]} {ingredient[1]}'
             return HttpResponse(shopping_cart, content_type='text/plain')
         except:
             raise Exception('Список покупок пуст')

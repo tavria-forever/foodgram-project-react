@@ -6,11 +6,9 @@ SECRET_KEY = os.getenv(
     'DJANGO_SECRET_KEY', '11xhwhxnbb-cyh8d0-gt$0pyiz=^=yroza+ph#b228fx5djqw$'
 )
 
-DEFAULT_ADMIN = ('admin', 'tavriaforever@yandex.ru')
-
 DEBUG = os.getenv('DJANGO_DEBUG', False)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['myfoodgram.ddns.net', '127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
     'django.contrib.admin',

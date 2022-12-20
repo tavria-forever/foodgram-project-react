@@ -24,6 +24,4 @@ class ShoppingOrder(models.Model):
         verbose_name_plural = 'Заказы на покупку'
 
     def __str__(self):
-        return (
-            f'pk: {self.id} пользователь {self.user} добавил в корзину рецепт {self.recipe}'
-        )
+        return f'pk: {self.id} пользователь {self.user} добавил в корзину рецепт {self.recipe}'
