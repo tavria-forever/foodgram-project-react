@@ -124,6 +124,8 @@ class FavouriteRecipe(models.Model):
                 name='favourite_user_recipe_unique',
             ),
         ]
+        verbose_name = 'Рецепт в избранном'
+        verbose_name_plural = 'Рецепты в избранном'
 
     def __str__(self):
         return f'pk: {self.id} пользователь {self.user} добавил рецепт {self.recipe} в избранное'

@@ -14,7 +14,12 @@ from .models import (
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'slug', 'color']
+    list_display = (
+        'id',
+        'name',
+        'slug',
+        'color',
+    )
     search_fields = ('name',)
     readonly_fields = ('id',)
     form = TagModelForm
@@ -22,7 +27,11 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'measurement_unit']
+    list_display = (
+        'id',
+        'name',
+        'measurement_unit',
+    )
     search_fields = ('name',)
     readonly_fields = ('id',)
 
@@ -41,14 +50,25 @@ class RecipeTagInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'text', 'cooking_time']
+    list_display = (
+        'id',
+        'name',
+        'text',
+        'cooking_time',
+    )
     list_filter = (
         'name',
         'author',
         'tags',
     )
-    list_select_related = True
-    search_fields = ('name',)
+    search_fields = (
+        'name',
+        'author__first_name',
+        'author__last_name',
+        'author__username',
+        'author__email',
+        'tags__name',
+    )
     inlines = (
         RecipeIngredientInline,
         RecipeTagInline,
@@ -62,4 +82,18 @@ class RecipeAdmin(admin.ModelAdmin):
         )
 
 
-admin.site.register(MeasurementUnit)
+@admin.register(MeasurementUnit)
+class MeasurementUnitAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'name',
+    )
+
+
+@admin.register(FavouriteRecipe)
+class FavouriteRecipeAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'recipe',
+    )

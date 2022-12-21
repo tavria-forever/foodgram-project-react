@@ -20,8 +20,8 @@ class ShoppingOrder(models.Model):
                 name='shopping_order_user_recipe_unique',
             ),
         ]
-        verbose_name = 'Заказ на покупку'
-        verbose_name_plural = 'Заказы на покупку'
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
 
     def __str__(self):
         return f'pk: {self.id} пользователь {self.user} добавил в корзину рецепт {self.recipe}'

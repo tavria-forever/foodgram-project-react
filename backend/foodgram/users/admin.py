@@ -16,6 +16,11 @@ class UserAdmin(admin.ModelAdmin):
         'username',
         'email',
     )
+    search_fields = (
+        'first_name',
+        'last_name',
+        'username',
+    )
 
 
 admin.site.register(Follow)
